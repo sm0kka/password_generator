@@ -1,25 +1,31 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 import random
 import string as st
 import argparse
 
 
-class Password(object):
+class PasswordGenerator(object):
     def __init__(self):
-        self.result = []
+        self.passwords = []
 
     def generate(self, chars=14, amount=1):
         if amount == 0:
-            return self.result
+            return self.passwords
 
-        self.result.append(''.join([random.choice(st.ascii_letters + st.digits) for _ in range(chars)]))
+        self.passwords.append(
+            ''.join(
+                random.choice(st.ascii_letters + st.digits) for _ in range(chars)
+            )
+        )
 
         return self.generate(chars, amount - 1)
 
     def __repr__(self):
-        result = []
-        for index, password in enumerate(self.result, 1):
-            result.append(f'\t{index if len(self.result) > 1 else ""}\t{password}\n')
+        result = [
+            f'\t{index if len(self.passwords) > 1 else ""}\t{password}\n'
+            for index, password in enumerate(self.passwords, 1)
+        ]
+
         return ''.join(result)
 
 
@@ -33,7 +39,7 @@ def main():
 
     args = parser.parse_args()
 
-    password = Password()
+    password = PasswordGenerator()
     password.generate(args.chars, args.amount)
 
     return password.__repr__()
