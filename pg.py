@@ -8,30 +8,35 @@ class PasswordGenerator(object):
     def __init__(self):
         self.passwords = []
 
+
     def generate(self, chars=14, amount=1):
-        if amount == 0:
-            return self.passwords
-
-        self.passwords.append(
-            ''.join(
-                random.choice(st.ascii_letters + st.digits) for _ in range(chars)
+        for _ in range(amount):
+            self.passwords.append(
+                ''.join(
+                    random.choice(st.ascii_letters + st.digits) for _ in range(chars)
+                )
             )
-        )
+        return self.passwords
 
-        return self.generate(chars, amount - 1)
 
     def __repr__(self):
-        result = [
-            f'\t{index if len(self.passwords) > 1 else ""}\t{password}\n'
-            for index, password in enumerate(self.passwords, 1)
-        ]
+        len_of_passwords = len(self.passwords)
+        if len_of_passwords > 1:
+            result = [
+                f'\t{index}\t{password}\n'
+                for index, password in enumerate(self.passwords, 1)
+            ]
+            return ''.join(result)
 
-        return ''.join(result)
+        if len_of_passwords == 1:
+            return ''.join(self.passwords)
 
+        return "Error: [-a / --amount] equals 0 is too low value try -a 1 or more"
 
 def main():
     parser = argparse.ArgumentParser(prog='pg.py', description='Generate ASCII passwords',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
     parser.add_argument("-c", "--chars", metavar='C', type=int, default=14,
                         help='Length of password in characters')
     parser.add_argument("-a", "--amount", metavar='A', type=int, default=1,
