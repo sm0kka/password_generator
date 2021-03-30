@@ -8,13 +8,16 @@ class PasswordGenerator(object):
     def __init__(self):
         self.passwords = []
 
-    def generate(self, chars=14, amount=1, punctuation=False):
-        option = {'letters': st.ascii_letters, 'digits': st.digits, 'punctuation': st.punctuation}
-        # Default set of chars letters and digits
-        set_of_chars = option['letters'] + option['digits']
+    def generate(self, chars=14, amount=1, charset='letters'):
 
-        if punctuation:
-            set_of_chars += option['punctuation']
+        option = {'d': 10, 'l': 62, 'p': 94}
+
+        # Default set of chars letters and digits
+        # '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'
+        set_of_chars = st.printable[:94]
+
+        if charset in option:
+            set_of_chars = set_of_chars[:option[charset]]
 
         chars_dict = {k: v for k, v in enumerate(set_of_chars)}
         for _ in range(amount):
@@ -48,17 +51,16 @@ def main():
                         help='Length of password in characters')
     parser.add_argument("-a", "--amount", metavar='', type=int, default=1,
                         help='Amount of passwords')
-    parser.add_argument("-p", "--punctuation", action='store_true',
-                        help=f'Add punctuation in letters and digits charset for password generation')
+    parser.add_argument("-cs", "--charset", type=str, default='l',
+                        help=f'Charset for password generation (d(digits), l(letters), p(punctuation)')
 
     args = parser.parse_args()
 
     password = PasswordGenerator()
-    password.generate(args.chars, args.amount, args.punctuation)
+    password.generate(args.chars, args.amount, args.charset)
 
     return password.__repr__()
 
 
 if __name__ == '__main__':
     print(main())
-
