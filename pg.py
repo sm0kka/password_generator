@@ -8,7 +8,7 @@ class PasswordGenerator(object):
     def __init__(self):
         self.passwords = []
 
-    def generate(self, chars=14, amount=1, charset='letters'):
+    def generate(self, chars=14, amount=1, charset='l'):
 
         option = {'d': 10, 'l': 62, 'p': 94}
 
@@ -16,7 +16,10 @@ class PasswordGenerator(object):
         # '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'
         set_of_chars = st.printable[:94]
 
-        if charset in option:
+        if charset not in option:
+            set_of_chars = set_of_chars[:option['l']]
+
+        else:
             set_of_chars = set_of_chars[:option[charset]]
 
         chars_dict = {k: v for k, v in enumerate(set_of_chars)}
