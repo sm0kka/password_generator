@@ -67,3 +67,7 @@ Make sets:
         *XJ?-AG7sSNIKY
 
         
+        ./pg.py -c64 -sl -m6 -v
+        Sliced set(6): abcdef
+
+                afbdefffdbdfedbccbbcdfaddcddcbcafbcabdeafaeadfdddcbacaafafabbdcf
