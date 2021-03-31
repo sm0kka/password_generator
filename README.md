@@ -10,8 +10,10 @@
     -m , --manual      Manual slice set of chars (default: 0)
     -v, --verbose      Show set of chars before generation (default: False)
     -V, --version      Show version (default: False)
-    -t, --temporary    Generate temporary password. Ignore all other settings except of -a. Example: Zyx51534 (default: False)
-    -s SET, --set SET  Charset for password generation(d: digits, l: lowercase letters, u: uppercase letters, p: punctuation) (default: dlu)
+    -t, --temporary    Generate temporary password. Ignore all other settings except of -a. 
+                        Example: Zyx51534 (default: False)
+    -s SET, --set SET  Charset for password generation
+                        (d: digits, l: lowercase letters, u: uppercase letters, p: punctuation) (default: dlu)
 
  
 Generate 10 "temporary" passwords:
@@ -40,7 +42,7 @@ The manual slice set:
 
         $./pg.py -c32 -a5 -sdu -m16 -v
 
-        Sliced set(16): 0123456789ABCDEF
+        Current set(16): 0123456789ABCDEF
 
         1       04BD2DC646D146C373AD1D126182E3AE
         2       8A996F1E3330218D76EB038D858A8F08
@@ -48,9 +50,10 @@ The manual slice set:
         4       EE7364236F40622C846E675A6F9B5EA6
         5       848A20F3C7647384FAC8DF3FD7B17E71
 
+
         $./pg.py -c32 -a5 -sdl -m16 -v
 
-        Sliced set(16): 0123456789abcdef
+        Current set(16): 0123456789abcdef
 
         1       e46aa91316dc885082bfe4da1348c0c5
         2       1e69ec02eb0872cb2fbc04082f9b03ec
@@ -58,16 +61,50 @@ The manual slice set:
         4       a221994db3fcc5b0c3a1130685e4db82
         5       fff37974bc27871b8ea91cd0ddfde282
 
+        
+        ./pg.py -c64 -sl -m6 -v
+
+        Current set(6): abcdef
+
+                afbdefffdbdfedbccbbcdfaddcddcbcafbcabdeafaeadfdddcbacaafafabbdcf
+
 Make sets:
         
         $./pg.py -sdlup -v
 
-        Sliced set(88): 0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!#$%&()*+,-.:;<=>?@[]^_{}~
+        Current set(88): 0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!#$%&()*+,-.:;<=>?@[]^_{}~
 
-        *XJ?-AG7sSNIKY
+                *XJ?-AG7sSNIKY
 
+
+        $./pg.py -supdl -v 
         
-        ./pg.py -c64 -sl -m6 -v
-        Sliced set(6): abcdef
+        Current set(88): ABCDEFGHIJKLMNOPQRSTUVWXYZ!#$%&()*+,-.:;<=>?@[]^_{}~0123456789abcdefghijklmnopqrstuvwxyz
+        
+                NfV_WN@juBb#ik
 
-                afbdefffdbdfedbccbbcdfaddcddcbcafbcabdeafaeadfdddcbacaafafabbdcf
+
+        $./pg.py -s d -v
+        
+        Current set(10): 0123456789
+
+                98952259678636
+        
+
+        $./pg.py -s l -v
+            
+        Current set(26): abcdefghijklmnopqrstuvwxyz
+
+                ltwmavowxlfmqn
+        
+        $./pg.py -s u -v
+        
+        Current set(26): ABCDEFGHIJKLMNOPQRSTUVWXYZ
+
+                TYXMQBWQEZODVZ
+        
+        $./pg.py -s p -v
+        
+        Current set(26): !#$%&()*+,-.:;<=>?@[]^_{}~
+
+                ,<#~{{.:$%@(&=

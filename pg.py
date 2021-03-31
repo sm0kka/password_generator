@@ -61,7 +61,7 @@ class PasswordGenerator(object):
             chars_str = chars_str[:manual]  # Slice set
 
         if verbose:
-            print(f'Sliced set({len(chars_str)}): {chars_str}\n')
+            print(f'Current set({len(chars_str)}): {chars_str}\n')
 
         for _ in range(amount):
             self.passwords.append(
