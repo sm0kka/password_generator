@@ -2,12 +2,14 @@
 import argparse
 import random
 
+
+VERSION = '0.1'     # Last edit 31.03.2021
 OPTION = {
     'd': '0123456789',
     'l': 'abcdefghijklmnopqrstuvwxyz',
     'u': 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
     'p': '!#$%&()*+,-.:;<=>?@[]^_{}~',
-    'v': 'aeiou'
+    'v': 'aeiou'  # vowels
 }
 
 
@@ -19,7 +21,7 @@ class PasswordGenerator(object):
         # helper: tuple of tuples (amount, set_chars)
         helper = (
             (1, ''.join(OPTION.get('u', ''))),
-            (1, ''.join(OPTION.get('v', ''))),  # vowels
+            (1, ''.join(OPTION.get('v', ''))),
             (1, ''.join(OPTION.get('l', ''))),
             (5, ''.join(OPTION.get('d', '')))
         )
@@ -39,7 +41,11 @@ class PasswordGenerator(object):
 
         return self.passwords
 
-    def generate(self, chars=14, amount=1, set_chars='dlu', manual=0, verbose=False, temporary=False):
+    def generate(self, chars=14, amount=1, set_chars='dlu', manual=0, verbose=False, temporary=False, vesion=False):
+        if vesion:
+            print(f'Password Generator {VERSION}')
+            return
+
         if temporary:
             return PasswordGenerator.temp_pass(self, amount, verbose)
 
@@ -77,7 +83,7 @@ class PasswordGenerator(object):
         if len_of_passwords == 1:
             return '\t\t' + ''.join(self.passwords)
 
-        return "ValueError: [-a / --amount] less 1"
+        return ""
 
 
 def main():
@@ -88,20 +94,22 @@ def main():
                         help='Length of password in characters')
     parser.add_argument("-a", "--amount", metavar='', type=int, default=1,
                         help='Amount of passwords')
-    parser.add_argument("-s", "--set", type=str, default='dlu',
-                        help=f'Charset for password generation'
-                             f'(d: digits, l: lowercase letters, u: uppercase letters, p: punctuation)')
     parser.add_argument("-m", "--manual", metavar='', type=int, default=0,
                         help='Manual slice set of chars')
     parser.add_argument("-v", "--verbose", action='store_true',
                         help='Show set of chars before generation')
+    parser.add_argument("-V", "--version", action='store_true',
+                        help='Show version')
     parser.add_argument("-t", "--temporary", action='store_true',
                         help='Generate temporary password. Ignore all other settings except of -a. Example: Zyx51534')
+    parser.add_argument("-s", "--set", type=str, default='dlu',
+                        help=f'Charset for password generation'
+                             f'(d: digits, l: lowercase letters, u: uppercase letters, p: punctuation)')
 
     args = parser.parse_args()
 
     password = PasswordGenerator()
-    password.generate(args.chars, args.amount, args.set, args.manual, args.verbose, args.temporary)
+    password.generate(args.chars, args.amount, args.set, args.manual, args.verbose, args.temporary, args.version)
 
     return password.__repr__()
 
