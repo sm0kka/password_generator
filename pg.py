@@ -29,8 +29,7 @@ class PasswordGenerator(object):
         for _ in range(amount):
             generate = ''.join(
                 ''.join(
-                    set_chars[random.randrange(len(set_chars))]
-                    for _ in range(number_of_chars)
+                    random.choice(set_chars) for _ in range(number_of_chars)
                 )
                 for number_of_chars, set_chars in helper
             )
@@ -41,8 +40,8 @@ class PasswordGenerator(object):
 
         return self.passwords
 
-    def generate(self, chars=14, amount=1, set_chars='dlu', manual=0, verbose=False, temporary=False, vesion=False):
-        if vesion:
+    def generate(self, chars=14, amount=1, set_chars='dlu', manual=0, verbose=False, temporary=False, version=False):
+        if version:
             print(f'Password Generator {VERSION}')
             return
 
@@ -66,7 +65,7 @@ class PasswordGenerator(object):
         for _ in range(amount):
             self.passwords.append(
                 ''.join(
-                    chars_str[random.randrange(len(chars_str))] for _ in range(chars)
+                    random.choice(chars_str) for _ in range(chars)
                 )
             )
         return self.passwords
@@ -115,4 +114,7 @@ def main():
 
 
 if __name__ == '__main__':
-    print(main())
+    # print(main())
+    import timeit
+
+    print(timeit.timeit("main()", setup="from __main__ import main", number=20000))
