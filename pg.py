@@ -18,7 +18,6 @@ class PasswordGenerator(object):
     def __init__(self):
         self.passwords = []
 
-    @lru_cache()
     def temp_pass(self, amount=1, verbose=False):
         # helper: tuple of tuples (amount, set_chars)
         helper = (
@@ -99,15 +98,15 @@ def main():
                         help='Amount of passwords')
     parser.add_argument("-m", "--manual", metavar='', type=int, default=0,
                         help='Manual slice set of chars')
+    parser.add_argument("-s", "--set", type=str, default='dlu',
+                        help=f'Charset for password generation'
+                             f'(d: digits, l: lowercase letters, u: uppercase letters, p: punctuation)')
     parser.add_argument("-v", "--verbose", action='store_true',
                         help='Show set of chars before generation')
     parser.add_argument("-V", "--version", action='store_true',
                         help='Show version')
     parser.add_argument("-t", "--temporary", action='store_true',
                         help='Generate temporary password. Ignore all other settings except of -a. Example: Zyx51534')
-    parser.add_argument("-s", "--set", type=str, default='dlu',
-                        help=f'Charset for password generation'
-                             f'(d: digits, l: lowercase letters, u: uppercase letters, p: punctuation)')
 
     args = parser.parse_args()
 
@@ -117,28 +116,5 @@ def main():
     return password.__repr__()
 
 
-@lru_cache()
-def test_and_time():
-    setup = {
-        'chars': 14,
-        'amount': 1,
-        'manual': 0,
-        'set_chars': 'dlu',
-        'verbose': False,
-        'temporary': False,
-        'version': False
-    }
-    password = PasswordGenerator()
-    password.generate(**setup)
-    return password.__repr__()
-
-
 if __name__ == '__main__':
     print(main())
-
-    # import timeit
-    #
-    #
-    # print(timeit.timeit("test_and_time()", setup="from __main__ import test_and_time", number=200000))
-    #
-    # print(timeit.timeit("main()", setup="from __main__ import main", number=200000))
