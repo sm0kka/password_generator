@@ -1,28 +1,29 @@
 #!/usr/bin/python3
 import argparse
 import random
-import string as st
 
 
 class PasswordGenerator(object):
     def __init__(self):
         self.passwords = []
 
-    def generate(self, chars=14, amount=1, charset='l'):
+    def generate(self, chars=14, amount=1, set_chars='dlu'):
 
-        option = {'d': 10, 'l': 62, 'p': 94}
+        option = {
+            'd': '0123456789',
+            'l': 'abcdefghijklmnopqrstuvwxyz',
+            'u': 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+            'p': '!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'
+        }
 
-        # Default set of chars letters and digits
-        # '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'
-        set_of_chars = st.printable[:94]
+        if all(False for i in set_chars if i in option):
+            print(f'ValueError: -s {set_chars}\nRun with default charset: "dlu"')
+            # Default set of chars letters and digits
+            set_chars = 'dlu'
 
-        if charset not in option:
-            set_of_chars = set_of_chars[:option['l']]
+        set_chars = ''.join(option.get(i, '') for i in set_chars if i in option)
 
-        else:
-            set_of_chars = set_of_chars[:option[charset]]
-
-        chars_dict = {k: v for k, v in enumerate(set_of_chars)}
+        chars_dict = {k: v for k, v in enumerate(set_chars)}
         for _ in range(amount):
             self.passwords.append(
                 ''.join(
@@ -43,24 +44,25 @@ class PasswordGenerator(object):
         if len_of_passwords == 1:
             return '\t\t' + ''.join(self.passwords)
 
-        return "Error: [-a / --amount] equals 0 is too low value try -a 1 or more"
+        return "ValueError: [-a / --amount] less 1"
 
 
 def main():
-    parser = argparse.ArgumentParser(prog='pg.py', description='Generate ASCII passwords',
+    parser = argparse.ArgumentParser(prog='pg.py', description='Password generator',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument("-c", "--chars", metavar='', type=int, default=14,
                         help='Length of password in characters')
     parser.add_argument("-a", "--amount", metavar='', type=int, default=1,
                         help='Amount of passwords')
-    parser.add_argument("-cs", "--charset", type=str, default='l',
-                        help=f'Charset for password generation (d(digits), l(letters), p(punctuation)')
+    parser.add_argument("-s", "--set", type=str, default='dlu',
+                        help=f'Charset for password generation '
+                             f'(d: digits, l: lowercase letters, u: uppercase letters, p: punctuation)')
 
     args = parser.parse_args()
 
     password = PasswordGenerator()
-    password.generate(args.chars, args.amount, args.charset)
+    password.generate(args.chars, args.amount, args.set)
 
     return password.__repr__()
 
