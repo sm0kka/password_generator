@@ -1,9 +1,10 @@
 #!/usr/bin/python3
 import argparse
 import random
+from functools import lru_cache
 
 
-VERSION = '0.1'     # Last edit 31.03.2021
+VERSION = '0.1'  # Last edit 31.03.2021
 OPTION = {
     'd': '0123456789',
     'l': 'abcdefghijklmnopqrstuvwxyz',
@@ -17,6 +18,7 @@ class PasswordGenerator(object):
     def __init__(self):
         self.passwords = []
 
+    @lru_cache()
     def temp_pass(self, amount=1, verbose=False):
         # helper: tuple of tuples (amount, set_chars)
         helper = (
@@ -40,7 +42,8 @@ class PasswordGenerator(object):
 
         return self.passwords
 
-    def generate(self, chars=14, amount=1, set_chars='dlu', manual=0, verbose=False, temporary=False, version=False):
+    @lru_cache()
+    def generate(self, chars=14, amount=1, manual=0, set_chars='dlu', verbose=False, temporary=False, version=False):
         if version:
             print(f'Password Generator {VERSION}')
             return
@@ -85,6 +88,7 @@ class PasswordGenerator(object):
         return ""
 
 
+@lru_cache()
 def main():
     parser = argparse.ArgumentParser(prog='pg.py', description='Password generator',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -108,13 +112,33 @@ def main():
     args = parser.parse_args()
 
     password = PasswordGenerator()
-    password.generate(args.chars, args.amount, args.set, args.manual, args.verbose, args.temporary, args.version)
+    password.generate(args.chars, args.amount, args.manual, args.set, args.verbose, args.temporary, args.version)
 
     return password.__repr__()
 
 
-if __name__ == '__main__':
-    # print(main())
-    import timeit
+@lru_cache()
+def test_and_time():
+    setup = {
+        'chars': 14,
+        'amount': 1,
+        'manual': 0,
+        'set_chars': 'dlu',
+        'verbose': False,
+        'temporary': False,
+        'version': False
+    }
+    password = PasswordGenerator()
+    password.generate(**setup)
+    return password.__repr__()
 
-    print(timeit.timeit("main()", setup="from __main__ import main", number=20000))
+
+if __name__ == '__main__':
+    print(main())
+
+    # import timeit
+    #
+    #
+    # print(timeit.timeit("test_and_time()", setup="from __main__ import test_and_time", number=200000))
+    #
+    # print(timeit.timeit("main()", setup="from __main__ import main", number=200000))
