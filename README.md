@@ -1,9 +1,9 @@
-#usage: pg.py [-h] [-c] [-a] [-s SET] [-m] [-v] [-t]
+# usage: pg.py [-h] [-c] [-a] [-s SET] [-m] [-v] [-t]
 
-#Password generator
+# Password generator
 
-optional arguments:
-  -h, --help         show this help message and exit
+## optional arguments:
+  ## -h, --help         show this help message and exit
   -c , --chars       Length of password in characters (default: 14)
   -a , --amount      Amount of passwords (default: 1)
   -s SET, --set SET  Charset for password generation
