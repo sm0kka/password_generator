@@ -27,8 +27,7 @@ class PasswordGenerator(object):
             (1, self.OPTION.get('l', '')), # для объединения iterable, а у тебя в 
             (5, self.OPTION.get('d', ''))  # tuple уже лежит строка
         )
-
-        generated = ''.join(((random.choice(set_chars) for _ in range(number_of_chars)) for number_of_chars, set_chars in helper))
+        generated = ''.join(''.join(random.choice(a) for _ in range(i)) for i, a in helper) # вот это все еще не нравится
         self.passwords.append(generated) # тут тоже был лишний join
 
         if GLOBAL_VERBOSE:
@@ -105,15 +104,16 @@ def main():
         sys.exit(0)
 
     global GLOBAL_VERBOSE 
-    GLOBAL_VERBOSE = args.verbose
+    GLOBAL_VERBOSE= args.verbose
     
     password = PasswordGenerator()
 
     if args.temporary:
-        password.temp_pass()
-
-    for _ in range(args.amount):
-        password.generate(args.chars, args.manual, args.set)
+        for _ in range(args.amount):
+            password.temp_pass() 
+    else:
+        for _ in range(args.amount):
+            password.generate(args.chars, args.manual, args.set)
 
     return str(password) # раз уж у тебя есть __repr__
 
