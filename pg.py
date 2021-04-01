@@ -1,74 +1,59 @@
 #!/usr/bin/python3
 import argparse
-import random
+import random, sys
 from functools import lru_cache
 
 
-VERSION = '0.1'  # Last edit 31.03.2021
-OPTION = {
-    'd': '0123456789',
-    'l': 'abcdefghijklmnopqrstuvwxyz',
-    'u': 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-    'p': '!#$%&()*+,-.:;<=>?@[]^_{}~',
-    'v': 'aeiou'  # vowels
-}
+VERSION = '0.1.1'  # Last edit 01.04.2021
+
+GLOBAL_VERBOSE = False
 
 
 class PasswordGenerator(object):
+    OPTION = {'d': '0123456789', # все инстансы класса видят это и могут менять, globals - зло!
+        'l': 'abcdefghijklmnopqrstuvwxyz',
+        'u': 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+        'p': '!#$%&()*+,-.:;<=>?@[]^_{}~',
+        'v': 'aeiou'  # vowels
+        }
     def __init__(self):
         self.passwords = []
 
-    def temp_pass(self, amount=1, verbose=False):
+    def temp_pass(self):
         # helper: tuple of tuples (amount, set_chars)
         helper = (
-            (1, ''.join(OPTION.get('u', ''))),
-            (1, ''.join(OPTION.get('v', ''))),
-            (1, ''.join(OPTION.get('l', ''))),
-            (5, ''.join(OPTION.get('d', '')))
+            (1, self.OPTION.get('u', '')), # get() чуть дороже, чем OPTION[key]
+            (1, self.OPTION.get('v', '')), # зачем был str.join я не понял, он нужен
+            (1, self.OPTION.get('l', '')), # для объединения iterable, а у тебя в 
+            (5, self.OPTION.get('d', ''))  # tuple уже лежит строка
         )
 
-        for _ in range(amount):
-            generate = ''.join(
-                ''.join(
-                    random.choice(set_chars) for _ in range(number_of_chars)
-                )
-                for number_of_chars, set_chars in helper
-            )
-            self.passwords.append(''.join(generate))
+        generated = ''.join(((random.choice(set_chars) for _ in range(number_of_chars)) for number_of_chars, set_chars in helper))
+        self.passwords.append(generated) # тут тоже был лишний join
 
-        if verbose:
+        if GLOBAL_VERBOSE:
             print('Generate temporary password like: Abc12345\n')
 
         return self.passwords
 
-    @lru_cache()
-    def generate(self, chars=14, amount=1, manual=0, set_chars='dlu', verbose=False, temporary=False, version=False):
-        if version:
-            print(f'Password Generator {VERSION}')
-            return
-
-        if temporary:
-            return PasswordGenerator.temp_pass(self, amount, verbose)
-
-        if all(False for i in set_chars if i in OPTION):
+    # @lru_cache() # если оставить, то генерится только один пароль (типа вызов уже сделан)
+    def generate(self, chars=14, manual=0, set_chars='dlu'):
+        if all(False for i in set_chars if i in self.OPTION):
             print(f'ValueError: -s {set_chars}\nRun with default charset: "dlu"')
             # Default set of chars letters and digits
             set_chars = 'dlu'
 
         # Generate chars string
-        chars_str = ''.join(OPTION.get(i, '') for i in set_chars if i in OPTION)
+        chars_str = ''.join(self.OPTION.get(i, '') for i in set_chars if i in self.OPTION)
 
         if manual in range(1, len(chars_str)):
             chars_str = chars_str[:manual]  # Slice set
 
-        if verbose:
+        if GLOBAL_VERBOSE:
             print(f'Current set({len(chars_str)}): {chars_str}\n')
 
-        for _ in range(amount):
-            self.passwords.append(
-                ''.join(
-                    random.choice(chars_str) for _ in range(chars)
-                )
+        self.passwords.append(
+            ''.join(random.choice(chars_str) for _ in range(chars))
             )
         return self.passwords
 
@@ -86,6 +71,11 @@ class PasswordGenerator(object):
 
         return ""
 
+    def __str__(self):
+        return self.__repr__() ## Your repr was good.
+
+def version():
+    print(f'Password Generator {VERSION}')
 
 @lru_cache()
 def main():
@@ -106,15 +96,28 @@ def main():
     parser.add_argument("-V", "--version", action='store_true',
                         help='Show version')
     parser.add_argument("-t", "--temporary", action='store_true',
-                        help='Generate temporary password. Ignore all other settings except of -a. Example: Zyx51534')
+                        help='Generate temporary password. Ignore all other settings except of -a. Example: Zyx51534', default=False)
 
     args = parser.parse_args()
 
-    password = PasswordGenerator()
-    password.generate(args.chars, args.amount, args.manual, args.set, args.verbose, args.temporary, args.version)
+    if args.version:
+        version()
+        sys.exit(0)
 
-    return password.__repr__()
+    global GLOBAL_VERBOSE 
+    GLOBAL_VERBOSE = args.verbose
+    
+    password = PasswordGenerator()
+
+    if args.temporary:
+        password.temp_pass()
+
+    for _ in range(args.amount):
+        password.generate(args.chars, args.manual, args.set)
+
+    return str(password) # раз уж у тебя есть __repr__
 
 
 if __name__ == '__main__':
     print(main())
+
