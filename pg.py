@@ -21,19 +21,19 @@ class PasswordGenerator:
     def __init__(self, **kwargs):
         """kwargs: chars, amount, manual, set_chars, verbose, temporary, version"""
         self.passwords = set()
-        self.kwarg = kwargs
+        self._kwargs = kwargs
 
     @property
     def kwargs(self):
-        return self.kwarg
+        return self._kwargs
 
     def temp_pass(self):
         # password_collector: tuple of tuples (int: amount, str: set_chars)
         password_collector = (
-            (1, OPTION.get('u', '')),
-            (1, OPTION.get('v', '')),
-            (1, OPTION.get('l', '')),
-            (5, OPTION.get('d', ''))
+            (1, OPTION['u']),
+            (1, OPTION['v']),
+            (1, OPTION['l']),
+            (5, OPTION['d'])
         )
 
         for _ in range(self.kwargs['amount']):
