@@ -1,30 +1,31 @@
 #!/usr/bin/python3
 import argparse
-import random
+from secrets import choice
+import string
 from functools import lru_cache
+import logging
 
 
-VERSION = '0.1.3'  # Last edit 05.04.2021
+VERSION = '0.1.4'  # Last edit 10.04.2021
+logging.basicConfig(level=logging.INFO, format='%(message)s')
 OPTION = {
-    'd': '0123456789',
-    'l': 'abcdefghijklmnopqrstuvwxyz',
-    'u': 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-    'p': '!#$%&()*+,-.:;<=>?@[]^_{}~',
+    'd': string.digits,
+    'l': string.ascii_lowercase,
+    'u': string.ascii_uppercase,
+    'p': string.punctuation,
     'v': 'aeiou'  # vowels
 }
 
 
-class PasswordGenerator(object):
+class PasswordGenerator:
     def __init__(self, **kwargs):
         """kwargs: chars, amount, manual, set_chars, verbose, temporary, version"""
         self.passwords = set()
-        self.kwargs = kwargs
+        self.kwarg = kwargs
 
-    def get_kwarg_value(self, name):
-        return self.kwargs.get(name, '')
-
-    def set_kwarg_value(self, name, value):
-        self.kwargs[name] = value
+    @property
+    def kwargs(self):
+        return self.kwarg
 
     def temp_pass(self):
         # password_collector: tuple of tuples (int: amount, str: set_chars)
@@ -35,65 +36,62 @@ class PasswordGenerator(object):
             (5, OPTION.get('d', ''))
         )
 
-        for _ in range(self.get_kwarg_value('amount')):
+        for _ in range(self.kwargs['amount']):
             generate = ''.join(
                 ''.join(
-                    random.choice(set_chars) for _ in range(number_of_chars)
+                    choice(set_chars) for _ in range(number_of_chars)
                 )
                 for number_of_chars, set_chars in password_collector
             )
             self.passwords.add(''.join(generate))
+        if self.kwargs['verbose']:
+            logging.info('Generate temporary password like: Gik01103')
 
-        if self.get_kwarg_value('verbose'):
-            self.set_kwarg_value('verbose_info', 'Generate temporary password like: Abc12345\n')
-
-        return self.get_kwarg_value('passwords')
+        return self.passwords
 
     @lru_cache()
     def get_password(self):
-        if self.get_kwarg_value('version'):
-            print(f'Password Generator {VERSION}')
+        if self.kwargs['version']:
+            logging.info(f'Password Generator {VERSION}')
             return
 
-        if self.get_kwarg_value('temporary'):
+        if self.kwargs['temporary']:
             return PasswordGenerator.temp_pass(self)
 
-        if all(False for i in self.get_kwarg_value('set_chars') if i in OPTION):
-            set_chars = self.get_kwarg_value('set_chars')
-            print(f'ValueError: unknown parameters "{set_chars}" in option -s \nRun with default charset: "dlu"')
+        if all(False for i in self.kwargs['set_chars'] if i in OPTION):
+            set_chars = self.kwargs['set_chars']
+            logging.error(f'ValueError: unknown parameters "{set_chars}" in option -s'
+                          f'\nRun with default charset: "dlu"')
             # Default set of chars letters and digits
-            self.set_kwarg_value('set_chars', 'dlu')
+            self.kwargs['set_chars'] = 'dlu'
 
         # Generate chars string
-        chars_str = ''.join(OPTION.get(i, '') for i in self.get_kwarg_value('set_chars') if i in OPTION)
+        chars_str = ''.join(OPTION.get(i, '')
+                            for i in self.kwargs['set_chars'] if i in OPTION)
 
-        if self.get_kwarg_value('manual') in range(1, len(chars_str)):
-            chars_str = chars_str[:self.get_kwarg_value('manual')]  # Slice set
+        if self.kwargs['manual'] in range(1, len(chars_str)):
+            chars_str = chars_str[:self.kwargs['manual']]  # Slice set
 
-        if self.get_kwarg_value('verbose'):
-            self.set_kwarg_value('verbose_info', f'Current set({len(chars_str)}): {chars_str}\n')
+        if self.kwargs['verbose']:
+            logging.info(f'Current set({len(chars_str)}): {chars_str}')
 
-        for _ in range(self.get_kwarg_value('amount')):
+        for _ in range(self.kwargs['amount']):
             self.passwords.add(
                 ''.join(
-                    random.choice(chars_str) for _ in range(self.get_kwarg_value('chars'))
+                    choice(chars_str) for _ in range(self.kwargs['chars'])
                 )
             )
         return self.passwords
 
-    def __repr__(self):
-        len_of_passwords = len(self.passwords)
-        if len_of_passwords > 1:
+    def generated_passwords(self):
+        if self.kwargs['amount'] > 1:
             result = [
                 f'\t{index}\t{password}\n'
                 for index, password in enumerate(self.passwords, 1)
             ]
-            return self.get_kwarg_value('verbose_info') + ''.join(result)
+            return ''.join(result)
 
-        if len_of_passwords == 1:
-            return self.get_kwarg_value('verbose_info') + '\t\t' + ''.join(self.passwords)
-
-        return ''
+        return '\t\t' + ''.join(self.passwords)
 
 
 def cli_parser():
@@ -113,7 +111,7 @@ def cli_parser():
     parser.add_argument('-V', '--version', action='store_true',
                         help='Show version')
     parser.add_argument('-t', '--temporary', action='store_true',
-                        help='Generate temporary password. Ignore all other settings except of -a. Example: Zyx51534')
+                        help='Generate temporary password. Ignore all other settings except of -a. Example: Gik01103')
 
     return parser.parse_args()
 
@@ -122,7 +120,7 @@ def cli_parser():
 def main():
     password = PasswordGenerator(**vars(cli_parser()))
     password.get_password()
-    return password
+    return password.generated_passwords()
 
 
 if __name__ == '__main__':
