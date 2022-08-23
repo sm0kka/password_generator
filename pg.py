@@ -59,7 +59,7 @@ class Generator:
         self.options = Options()
 
     def set_opts(self, options: Options | dict) -> None:
-        res = {**self.options.__dict__, **self.set_options(options).__dict__}
+        res = {**self.set_options(options).__dict__}
         self.options = Options(**res)
 
     def get_passwd(self) -> list[Password()]:
@@ -113,11 +113,12 @@ def main() -> None:
         return print(f'Password Generator ver.{VERSION}')
 
     passwd = Generator()
-    # ss = Options(amount=13, char_set='dt', lenght=128)
-    # s = passwd.options
-    # z = s + ss
-    # print(z)
-    # passwd.set_opts(z)
+
+    # test
+    # ss = Options(amount=13, char_set='dtl', lenght=128)
+    # print(ss)
+    # passwd.set_opts(ss)
+
     passwd.set_opts(opts)
 
     print_pass(passwd.get_passwd())
