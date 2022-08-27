@@ -6,28 +6,21 @@ from string import digits, ascii_uppercase, ascii_lowercase
 
 VERSION = '0.1.5'
 
-CHAR_SETS = {
-    'd': digits,
-    'l': ascii_lowercase,
-    'u': ascii_uppercase,
-    'p': '!$&(*.,+)-@^_?',
-    'v': 'aeiou',  # vowels
-    't': '!/-?'  # token punctuations
-}
+
+@dataclass(frozen=True, slots=True)
+class CharSets:
+    d: str = digits
+    l: str = ascii_lowercase
+    u: str = ascii_uppercase
+    p: str = '!$&(*.,+)-@^_?'
+    v: str = 'aeiou'  # vowels
+    t: str = '!/-?'  # token punctuations
+
+    def slots(self):
+        return self.__slots__
 
 
-def singleton(class_):
-    instances = {}
-
-    def get_instance(*args, **kwargs):
-        if class_ not in instances:
-            instances[class_] = class_(*args, **kwargs)
-        return instances[class_]
-
-    return get_instance
-
-
-@dataclass
+@dataclass(slots=True, frozen=True)
 class Password:
     value: str = ''
 
@@ -35,35 +28,27 @@ class Password:
         return f"{self.value}"
 
 
-@dataclass
+@dataclass(slots=True, kw_only=True, match_args=True)
 class Options:
     char_set: str = 'dul'
     amount: int = 1
-    lenght: int = 14
+    length: int = 14
     temporary: bool = False
     version: bool = False
 
-    def __repr__(self):
-        return f'{self.char_set=} {self.amount=} ' \
-               f'{self.lenght=} ' \
-               f'{self.temporary=} {self.version=}'
 
-    def __add__(self, other):
-        res = {**self.__dict__, **other.__dict__}
-        return Options(**res)
-
-
-@singleton
 class Generator:
     def __init__(self):
         self.options = Options()
 
-    def set_opts(self, options: Options | dict) -> None:
-        res = {**self.set_options(options).__dict__}
-        self.options = Options(**res)
+    def set_opts(self, options: Options) -> None:
+        if isinstance(options, Options):
+            self.options = options
+        else:
+            raise ValueError('Invalid options')
 
     def get_passwd(self) -> list[Password()]:
-        gen_function = self.temporary_passwd if self.options.temporary else self._generate_passwd
+        gen_function = self._temporary_passwd if self.options.temporary else self._generate_passwd
 
         if self.options.amount >= 1:
             return [gen_function() for _ in range(self.options.amount)]
@@ -71,39 +56,39 @@ class Generator:
             print('Amount could be >= 1')
 
     def _generate_passwd(self) -> Password():
-        char_set = ''.join([
-            CHAR_SETS.get(option) for option in self.options.char_set
-            if option in CHAR_SETS
+        chrset = CharSets()
+        kit_chrset = ''.join([
+            getattr(chrset, option) for option in self.options.char_set
+            if option in chrset.slots()
         ])
-        lenght = self.options.lenght
-        password = [choice(char_set) for _ in range(lenght)]
+        lenght = self.options.length
+        password = [choice(kit_chrset) for _ in range(lenght)]
         return Password(''.join(password))
 
-    def set_options(self, options: Options | dict) -> Options:
-        so = self.options
-        if isinstance(options, Options):
-            return so + options
-        elif isinstance(options, dict):
-            tmp = so.__dict__ | options
-            return Options(**tmp)
-        else:
-            raise ValueError('Invalid options')
-
     @staticmethod
-    def temporary_passwd() -> Password:
+    def _temporary_passwd() -> Password:
         password_collector = (1, 'u'), (1, 'v'), (1, 'l'), (5, 'd')
         res = []
         for amount, char_set in password_collector:
             for _ in range(amount):
-                res.append(choice(CHAR_SETS[char_set]))
+                res.append(choice(getattr(CharSets(), char_set)))
         password = ''.join(res)
         return Password(password)
 
 
-def print_pass(passwords: list[Password]) -> None:
+def print_passwd(passwords: list[Password]) -> None:
     if passwords:
         for i, password in enumerate(passwords, 1):
             print(f'{i}\t{password}')
+
+
+def test():
+    ps = Generator()
+    print(ps.options)
+    opt = Options(char_set='dut', amount=10, length=128)
+    ps.set_opts(opt)
+    print(ps.options)
+    print_passwd(ps.get_passwd())
 
 
 def main() -> None:
@@ -112,16 +97,11 @@ def main() -> None:
     if opts.version:
         return print(f'Password Generator ver.{VERSION}')
 
-    passwd = Generator()
+    pg = Generator()
 
-    # test
-    # ss = Options(amount=13, char_set='dtl', lenght=128)
-    # print(ss)
-    # passwd.set_opts(ss)
+    pg.set_opts(opts)
 
-    passwd.set_opts(opts)
-
-    print_pass(passwd.get_passwd())
+    print_passwd(pg.get_passwd())
     return
 
 
@@ -133,7 +113,7 @@ def cli_parser():
 
     parser.add_argument(
         '-l',
-        '--lenght',
+        '--length',
         metavar='',
         type=int,
         default=14,
