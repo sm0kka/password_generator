@@ -4,8 +4,8 @@ import argparse
 import random
 from dataclasses import dataclass
 import re
-from random import choices, shuffle
 from string import ascii_lowercase, ascii_uppercase, digits
+
 
 # Default values
 VERSION = '1.0.8'
@@ -18,20 +18,20 @@ CHARSETS = {
     'd': digits,
     'l': ascii_lowercase,
     'u': ascii_uppercase,
-    'p': '!$&(*.,+)-@^_?',
+    'p': '!(*.,+)-^_?',
     'v': 'aeiou',
     't': '!/-?',
 }
 
+
 @dataclass
 class Options:
-        length: int
-        number: int
-        template: list
-        charset: str
-        version: bool
-        # temporary: bool
-        shuffle: bool
+    length: int
+    number: int
+    template: list
+    charset: str
+    version: bool
+    shuffle: bool
 
 @dataclass
 class Password:
@@ -49,8 +49,7 @@ def shuffle_password(password: Password):
     else:
         raise ValueError
 
-
-def get_charset(keys=KEYS):
+def get_charset(keys=KEYS):  # sourcery skip: instance-method-first-arg-name
     keys = [key for key in keys if key in CHARSETS]
     charset = []
     for key in keys:
@@ -59,6 +58,7 @@ def get_charset(keys=KEYS):
     return charset
 
 def template_parser(template):
+    # parse template '12ul' to digit and letters '12', 'ul'
     return tuple(re.findall(r"[^\W\d_]+|\d+", template)[:2])
 
 def cli_parser():
@@ -130,17 +130,11 @@ def template_password(options):
 
     for i in options.template:
         amount, keys = template_parser(i)
-        password.append(str(get_char(int(amount), keys)))
-    # print(password)
+        password.append(get_char(int(amount), keys))
     return Password(''.join(password))
 
 def main():
         options = cli_parser()
-        # options.shuffle = True
-        # options.version = True
-        # options.temporary = True
-        # print(options)
-        result = Password()
 
         if options.version:
             print(version())
@@ -148,20 +142,13 @@ def main():
 
         for _ in range(options.number):
 
-            if options.template == []:
-                options.template = TEMPLATE
-
-                result = template_password(options)
-            elif options.template:
+            if isinstance(options.template, (list,)):
                 result = template_password(options)
             else:
-
                 result = get_password(options)
-
 
             if options.shuffle and isinstance(result, Password):
                 result = shuffle_password(result)
-
 
             print(result)
 
