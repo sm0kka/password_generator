@@ -4,7 +4,7 @@ from dataclasses import dataclass, asdict
 from secrets import choice
 from string import digits, ascii_uppercase, ascii_lowercase
 
-VERSION = '0.1.5'
+VERSION = '0.1.6'
 
 
 @dataclass(frozen=True, slots=True)
@@ -57,12 +57,12 @@ class Generator:
 
     def _generate_passwd(self) -> Password():
         chrset = CharSets()
-        kit_chrset = ''.join([
+        kit_chrset = ''.join({
             getattr(chrset, option) for option in self.options.char_set
             if option in chrset.slots()
-        ])
-        lenght = self.options.length
-        password = [choice(kit_chrset) for _ in range(lenght)]
+        })
+        length = self.options.length
+        password = [choice(kit_chrset) for _ in range(length)]
         return Password(''.join(password))
 
     @staticmethod
@@ -70,16 +70,17 @@ class Generator:
         password_collector = (1, 'u'), (1, 'v'), (1, 'l'), (5, 'd')
         res = []
         for amount, char_set in password_collector:
-            for _ in range(amount):
-                res.append(choice(getattr(CharSets(), char_set)))
+            res.extend(choice(getattr(CharSets(), char_set)) for _ in range(amount))
         password = ''.join(res)
         return Password(password)
 
 
 def print_passwd(passwords: list[Password]) -> None:
-    if passwords:
+    if passwords and len(passwords) > 1:
         for i, password in enumerate(passwords, 1):
             print(f'{i}\t{password}')
+    else:
+            print(f'{passwords[0]}', end='')
 
 
 def test():
@@ -92,7 +93,7 @@ def test():
 
 
 def main() -> None:
-    opts = Options(**vars(cli_parser()))
+    opts = Options(**cli_parser())
 
     if opts.version:
         return print(f'Password Generator ver.{VERSION}')
@@ -150,9 +151,9 @@ def cli_parser():
         action='store_true',
         help='Generate temporary password. Ignore all other settings except of -a. Example: Gik01103'
     )
-
-    return parser.parse_args()
+    return vars(parser.parse_args())
 
 
 if __name__ == '__main__':
     main()
+    # test()
